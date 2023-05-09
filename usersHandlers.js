@@ -2,8 +2,19 @@ const database = require("./database");
 
 
 const getUsers = (req, res) => {
+  let sql = "select * from users";
+  const sqlValues = [];
+  if (req.query.language != null){
+    sql += " where language = ?";
+    sqlValues.push(req.query.language)
+  }
+  if (req.query.city != null){
+    sql += " where city = ?";
+    sqlValues.push(req.query.city)
+  }
+
   database
-  .query("select * from users")
+  .query(sql,sqlValues)
   .then(([users]) => {
     res.json(users);
   })
@@ -71,10 +82,32 @@ const updateUser = (req, res) => {
     });
 };
 
+const deleteUser = (req, res) => {
+  const id = parseInt(req.params.id);
+
+  database
+  .query(
+    "delete from users where id = ?", [id]
+  )
+  .then(([result]) => {
+    if (result.affectedRows === 0) {
+      res.status(404).send("Not Found");
+    } else {
+      res.sendStatus(204);
+    }
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(500).send("Error editing user");
+  });
+};
+
+
 module.exports = {
     getUsers,
     getUsersById,
     postUser,
-    updateUser
+    updateUser,
+    deleteUser
 }
 
