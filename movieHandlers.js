@@ -48,7 +48,7 @@ const getMovies = (req, res) => {
   database
     .query(sql, sqlValues) // = ("select * from movies where color = ?", [req.query.color]) comme dans les autres handlers, c'est juste qu'on utilise des variables.
     .then(([movies]) => {
-      res.json(movies);
+      res.send(movies);
     })
     .catch((err) => {
       console.error(err);

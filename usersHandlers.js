@@ -86,12 +86,18 @@ const updateUser = (req, res) => {
   const id = parseInt(req.params.id);
   const { firstname, lastname, email, city, language } = req.body;
 
+  if (id !== req.payload.sub) {
+    res.status(403).send("Forbidden");
+    return; 
+  }
+  
   database
     .query(
       "update users set firstname = ?, lastname = ?, email = ?, city = ?, language = ? where id = ?",
       [firstname, lastname, email, city, language, id]
     )
     .then(([result]) => {
+
       if (result.affectedRows === 0) {
         res.status(404).send("Not Found");
       } else {
@@ -107,22 +113,30 @@ const updateUser = (req, res) => {
 const deleteUser = (req, res) => {
   const id = parseInt(req.params.id);
 
-  database
-  .query(
-    "delete from users where id = ?", [id]
-  )
-  .then(([result]) => {
-    if (result.affectedRows === 0) {
-      res.status(404).send("Not Found");
-    } else {
-      res.sendStatus(204);
-    }
-  })
-  .catch((err) => {
-    console.error(err);
-    res.status(500).send("Error editing user");
-  });
-};
+
+  if (id !== req.payload.sub) {
+    res.status(403).send("Forbidden");
+    return; 
+  }
+
+    database
+    .query(
+      "delete from users where id = ?", [id]
+    )
+    .then(([result]) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send("Not Found");
+      } else {
+        res.sendStatus(204);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error editing user");
+    });
+  }
+
+  
 
 
 
