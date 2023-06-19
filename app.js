@@ -13,28 +13,50 @@ const welcome = (req, res) => {
   res.send("Welcome to my favourite movie list");
 };
 
-app.get("/", welcome);
+
 
 const movieHandlers = require("./movieHandlers");
 const usersHandlers = require("./usersHandlers");
 const validators = require("./validators");
 
-const { hashPassword } = require("./auth.js");
 
 
-app.post("/api/users", hashPassword, usersHandlers.postUser);
+/* const isItDwight = (req, res) => {
+  if (req.body.email === "dwight@theoffice.com" && req.body.password === "123456") {
+    res.send("Credentials are valid");
+  } else {
+    res.sendStatus(401);
+  }
+}; */
+
+const { hashPassword, verifyPassword, verifyToken } = require("./auth");
+
+/* public routes */
+
+app.get("/", welcome);
+app.post(
+  "/api/login", 
+  usersHandlers.getUserByEmailWithPasswordAndPassToNext,
+  verifyPassword
+);
+app.get("/api/movies", movieHandlers.getMovies);
+app.get("/api/users/", usersHandlers.getUsers);
+app.get("/api/users/:id", usersHandlers.getUsersById);
+app.get("/api/movies/:id", movieHandlers.getMovieById);
+app.post("/api/users",  validators.validateUser, hashPassword, usersHandlers.postUser);
+
+/* private routes */
+
+app.use(verifyToken);  // authentication wall : verifyToken is activated for each route after this line
+
 app.post("/api/movies", validators.validateMovie, movieHandlers.postMovie);
-app.post("/api/users", validators.validateUser, usersHandlers.postUser);
-
 app.put("/api/users/:id", hashPassword, usersHandlers.updateUser);
 app.put("/api/movies/:id", validators.validateMovie, movieHandlers.updateMovie);
 app.put("/api/users/:id", validators.validateUser, usersHandlers.updateUser);
 
 
-app.get("/api/movies", movieHandlers.getMovies);
-app.get("/api/movies/:id", movieHandlers.getMovieById);
-app.get("/api/users/", usersHandlers.getUsers);
-app.get("/api/users/:id", usersHandlers.getUsersById);
+
+
 app.put("/api/movies/:id", movieHandlers.updateMovie);
 app.put("/api/users/:id", usersHandlers.updateUser)
 
